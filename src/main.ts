@@ -7,10 +7,140 @@ gsap.registerPlugin(ScrollTrigger)
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
-const canvas = document.getElementById('bg') as HTMLCanvasElement
+const canvas        = document.getElementById('bg')             as HTMLCanvasElement
 const textContainer = document.getElementById('text-container') as HTMLDivElement
-const navbar = document.getElementById('navbar') as HTMLElement
-const scrollHint = document.getElementById('scroll-hint') as HTMLElement
+const navbar        = document.getElementById('navbar')         as HTMLElement
+const scrollHint    = document.getElementById('scroll-hint')    as HTMLElement
+const enterOverlay  = document.getElementById('enter-overlay')  as HTMLDivElement
+const enterBtn      = document.getElementById('enter-btn')      as HTMLButtonElement
+const muteBtn       = document.getElementById('mute-btn')       as HTMLButtonElement
+
+// ── Audio System ──────────────────────────────────────────────────────────────
+
+let audioCtx: AudioContext | null = null
+let masterGain: GainNode | null   = null
+let isMuted = false
+
+function initAudio(): void {
+  audioCtx   = new AudioContext()
+  masterGain = audioCtx.createGain()
+  masterGain.gain.value = 1
+  masterGain.connect(audioCtx.destination)
+}
+
+function startAmbientHum(): void {
+  if (!audioCtx || !masterGain) return
+
+  const humGain = audioCtx.createGain()
+  humGain.gain.setValueAtTime(0, audioCtx.currentTime)
+  humGain.gain.linearRampToValueAtTime(0.10, audioCtx.currentTime + 2.5)
+
+  // Slow LFO for barely-perceptible pitch drift — makes the drone feel alive
+  const lfo     = audioCtx.createOscillator()
+  const lfoGain = audioCtx.createGain()
+  lfo.type            = 'sine'
+  lfo.frequency.value = 0.12
+  lfoGain.gain.value  = 1.2
+  lfo.connect(lfoGain)
+  lfo.start()
+
+  // Three detuned sine oscillators — deep space drone
+  ;[40, 55, 80].forEach((freq) => {
+    const osc = audioCtx!.createOscillator()
+    osc.type            = 'sine'
+    osc.frequency.value = freq
+    lfoGain.connect(osc.frequency)
+    osc.connect(humGain)
+    osc.start()
+  })
+
+  // Short feedback delay for spatial depth
+  const delay         = audioCtx.createDelay(2.0)
+  const delayFeedback = audioCtx.createGain()
+  const delayWet      = audioCtx.createGain()
+  delay.delayTime.value    = 0.9
+  delayFeedback.gain.value = 0.28
+  delayWet.gain.value      = 0.25
+
+  humGain.connect(delay)
+  delay.connect(delayFeedback)
+  delayFeedback.connect(delay)
+  delay.connect(delayWet)
+  delayWet.connect(masterGain)
+  humGain.connect(masterGain)
+}
+
+function playWhoosh(intensity = 1): void {
+  if (!audioCtx || !masterGain) return
+
+  const duration  = 1.3
+  const buf       = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * duration), audioCtx.sampleRate)
+  const data      = buf.getChannelData(0)
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
+
+  const src    = audioCtx.createBufferSource()
+  src.buffer   = buf
+
+  const filter         = audioCtx.createBiquadFilter()
+  filter.type          = 'bandpass'
+  filter.Q.value       = 2.2
+  filter.frequency.setValueAtTime(600,                    audioCtx.currentTime)
+  filter.frequency.linearRampToValueAtTime(2800 * intensity, audioCtx.currentTime + 0.35)
+  filter.frequency.linearRampToValueAtTime(300,           audioCtx.currentTime + duration)
+
+  const gain = audioCtx.createGain()
+  gain.gain.setValueAtTime(0,                      audioCtx.currentTime)
+  gain.gain.linearRampToValueAtTime(0.14 * intensity, audioCtx.currentTime + 0.12)
+  gain.gain.linearRampToValueAtTime(0,             audioCtx.currentTime + duration)
+
+  src.connect(filter)
+  filter.connect(gain)
+  gain.connect(masterGain)
+  src.start()
+}
+
+function playShimmer(): void {
+  if (!audioCtx || !masterGain) return
+
+  // Cascading C-major arpeggio — C5 → E5 → G5 → C6 → E6
+  ;[523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, i) => {
+    const osc  = audioCtx!.createOscillator()
+    const gain = audioCtx!.createGain()
+    const t    = audioCtx!.currentTime + i * 0.11
+
+    osc.type            = 'sine'
+    osc.frequency.value = freq
+    gain.gain.setValueAtTime(0,    t)
+    gain.gain.linearRampToValueAtTime(0.07, t + 0.05)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 3.5)
+
+    osc.connect(gain)
+    gain.connect(masterGain!)
+    osc.start(t)
+    osc.stop(t + 3.5)
+  })
+
+  // Airy high-frequency transient
+  const airBuf  = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * 0.4), audioCtx.sampleRate)
+  const airData = airBuf.getChannelData(0)
+  for (let i = 0; i < airData.length; i++) airData[i] = Math.random() * 2 - 1
+
+  const airSrc  = audioCtx.createBufferSource()
+  airSrc.buffer = airBuf
+
+  const airFilter         = audioCtx.createBiquadFilter()
+  airFilter.type          = 'highpass'
+  airFilter.frequency.value = 5000
+
+  const airGain = audioCtx.createGain()
+  airGain.gain.setValueAtTime(0.06, audioCtx.currentTime)
+  airGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4)
+
+  airSrc.connect(airFilter)
+  airFilter.connect(airGain)
+  airGain.connect(masterGain)
+  airSrc.start()
+}
 
 // ── Scene / Camera / Renderer ─────────────────────────────────────────────────
 
@@ -186,6 +316,10 @@ function tick() {
 }
 tick()
 
+// ── Experience (starts after Enter button click) ──────────────────────────────
+
+function startExperience(): void {
+
 // ── GSAP master timeline ──────────────────────────────────────────────────────
 
 const vp = getViewport(0)
@@ -225,7 +359,9 @@ const wanderSpots = [...randomHops, { x: SWEEP_LEFT, y: 0 }]
 
 const tl = gsap.timeline({ delay: 0.4 })
 
-// 1. Stars fade in + ambient warp speed ramps up together
+// 1. Ambient hum starts + stars fade in + warp ramps up together
+tl.call(() => startAmbientHum())
+
 tl.to(starMat, {
   opacity: 0.92,
   duration: 2.5,
@@ -248,12 +384,13 @@ tl.to(
 // 3. Wander → last hop lands on SWEEP_LEFT (no separate repositioning step) ──────
 tl.addLabel('wanderStart')
 
-wanderSpots.forEach((pos, i) => {
+wanderSpots.forEach((spot, i) => {
   tl.to(orbGroup.position, {
-    x: pos.x,
-    y: pos.y,
+    x: spot.x,
+    y: spot.y,
     duration: HOP_DURATIONS[i],
     ease: HOP_EASES[i],
+    onStart: () => playWhoosh(0.5 + i * 0.18),
   }, i === 0 ? 'wanderStart' : `>+=${WANDER_GAP}`)
 })
 
@@ -272,6 +409,8 @@ tl.to(sweep, {
   t: 1,
   duration: 2.6,
   ease: 'power1.inOut',
+
+  onStart() { playShimmer() },
 
   onUpdate() {
     const p = sweep.t
@@ -327,6 +466,8 @@ tl.call(() => {
   // Set up all scroll-driven effects
   setupScrollEffects()
 })
+
+} // ── end startExperience ─────────────────────────────────────────────────────
 
 // ── Scroll-driven effects (registered only after intro completes) ─────────────
 
@@ -397,3 +538,28 @@ function setupScrollEffects() {
     })
   })
 }
+
+// ── Enter button ──────────────────────────────────────────────────────────────
+
+enterBtn.addEventListener('click', () => {
+  initAudio()
+
+  gsap.to(enterOverlay, {
+    opacity: 0,
+    duration: 1.2,
+    ease: 'power2.inOut',
+    onComplete: () => { enterOverlay.style.display = 'none' },
+  })
+
+  startExperience()
+})
+
+// ── Mute toggle ───────────────────────────────────────────────────────────────
+
+muteBtn.addEventListener('click', () => {
+  isMuted = !isMuted
+  if (masterGain && audioCtx) {
+    masterGain.gain.setTargetAtTime(isMuted ? 0 : 1, audioCtx.currentTime, 0.08)
+  }
+  muteBtn.classList.toggle('muted', isMuted)
+})
