@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/lumnis-landingpage/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumnis — Bringing Light to Your Business</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/lumnis-landingpage/assets/index-D4CRZFl-.js"></script>
+    <link rel="stylesheet" crossorigin href="/lumnis-landingpage/assets/index-CFUfdUVt.css">
+  </head>
+
+  <!--
+    overflow:hidden locks scrolling immediately — JS removes it after the
+    intro animation completes.
+  -->
+  <body style="overflow: hidden">
+
+    <!-- ── Fixed layers (canvas → overlay → nav) ──────────────────── -->
+
+    <canvas id="bg"></canvas>
+
+    <div id="overlay">
+      <div id="text-container">
+        <h1 class="brand-name">Lumnis</h1>
+        <div class="divider"></div>
+        <p class="brand-tagline">bringing light to your business</p>
+      </div>
+    </div>
+
+    <nav id="navbar">
+      <div class="nav-inner">
+        <a href="#" class="nav-logo">Lumnis</a>
+        <ul class="nav-links">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ── Scrollable content ──────────────────────────────────────── -->
+
+    <main>
+
+      <!-- Hero spacer: the canvas + overlay float on top of this -->
+      <section id="hero">
+        <div id="scroll-hint">
+          <span>Scroll to explore</span>
+          <div class="scroll-arrow"></div>
+        </div>
+      </section>
+
+      <!-- Services ───────────────────────────────────────────────── -->
+      <section id="services">
+        <div class="section-inner">
+          <p class="section-label">What We Do</p>
+          <h2 class="section-title">Our Services</h2>
+          <p class="section-sub">
+            We bring clarity, structure, and light to every brand we work with.
+          </p>
+
+          <div class="services-grid">
+            <div class="service-card">
+              <span class="service-num">01</span>
+              <h3>Digital Strategy</h3>
+              <p>
+                We map the digital landscape and chart the clearest path to your
+                goals, removing every obstacle in between.
+              </p>
+            </div>
+            <div class="service-card">
+              <span class="service-num">02</span>
+              <h3>Brand Identity</h3>
+              <p>
+                A name, a mark, a language — we craft identities that hold their
+                meaning across every surface and medium.
+              </p>
+            </div>
+            <div class="service-card">
+              <span class="service-num">03</span>
+              <h3>Web Experience</h3>
+              <p>
+                From concept to code, we build digital spaces that feel alive,
+                responsive, and unmistakably yours.
+              </p>
+            </div>
+            <div class="service-card">
+              <span class="service-num">04</span>
+              <h3>Creative Direction</h3>
+              <p>
+                We guide the visual narrative so your story lands with impact —
+                at launch and long after.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About ──────────────────────────────────────────────────── -->
+      <section id="about">
+        <div class="section-inner about-inner">
+          <div class="about-text">
+            <p class="section-label">Who We Are</p>
+            <h2 class="section-title">The Studio</h2>
+            <p class="about-body">
+              Lumnis is a boutique creative agency built on the belief that
+              great design is simply the absence of noise. We work with
+              founders, startups, and established brands to strip away the
+              unnecessary and let the essential shine.
+            </p>
+            <p class="about-body">
+              Every project begins with a question: what does this brand need
+              to illuminate? From there, we build outwards — with intention,
+              precision, and craft.
+            </p>
+          </div>
+
+          <div class="about-stats">
+            <div class="stat">
+              <span class="stat-num">08</span>
+              <span class="stat-label">Years of practice</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">140+</span>
+              <span class="stat-label">Projects delivered</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">3</span>
+              <span class="stat-label">Continents reached</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact / Footer ────────────────────────────────────────── -->
+      <footer id="contact">
+        <div class="section-inner contact-inner">
+          <div class="contact-main">
+            <p class="section-label">Get In Touch</p>
+            <h2 class="section-title">Let's Work Together</h2>
+            <a href="mailto:hello@lumnis.studio" class="contact-email">
+              hello@lumnis.studio
+            </a>
+          </div>
+
+          <div class="footer-bottom">
+            <span class="footer-logo">Lumnis</span>
+            <span class="footer-copy">
+              © 2025 Lumnis Studio. All rights reserved.
+            </span>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+
+  </body>
+</html>
