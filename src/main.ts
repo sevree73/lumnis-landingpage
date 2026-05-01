@@ -235,6 +235,33 @@ const starMat = new THREE.PointsMaterial({
 
 scene.add(new THREE.Points(starGeo, starMat))
 
+// ── Nebula accent stars (static backdrop) ─────────────────────────────────────
+
+function makeNebulaStars(count: number, color: number): THREE.PointsMaterial {
+  const positions = new Float32Array(count * 3)
+  for (let i = 0; i < count; i++) {
+    positions[i * 3 + 0] = (Math.random() - 0.5) * 200
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 200
+    positions[i * 3 + 2] = -Math.random() * 150 - 50
+  }
+  const geo = new THREE.BufferGeometry()
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  const mat = new THREE.PointsMaterial({
+    color,
+    size: 0.07,
+    sizeAttenuation: true,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  })
+  scene.add(new THREE.Points(geo, mat))
+  return mat
+}
+
+const cyanStarMat = makeNebulaStars(350, 0x00D1FF)
+const pinkStarMat = makeNebulaStars(180, 0xFF4DB0)
+
 // ── Warp velocity state ────────────────────────────────────────────────────────
 
 const AMBIENT_SPEED  = 0.05
@@ -279,8 +306,8 @@ scene.add(orbGroup)
 orbGroup.add(
   makeSprite(
     makeGlowTexture(256, [
-      [0,    'rgba(255,255,255,0.50)'],
-      [0.45, 'rgba(255,255,255,0.12)'],
+      [0,    'rgba(123,92,255,0.45)'],
+      [0.45, 'rgba(0,209,255,0.10)'],
       [1,    'rgba(0,0,0,0)'],
     ]),
     4.5
@@ -290,8 +317,8 @@ orbGroup.add(
 orbGroup.add(
   makeSprite(
     makeGlowTexture(128, [
-      [0,    'rgba(255,255,255,0.92)'],
-      [0.35, 'rgba(255,255,255,0.42)'],
+      [0,    'rgba(123,92,255,0.90)'],
+      [0.35, 'rgba(0,209,255,0.38)'],
       [1,    'rgba(0,0,0,0)'],
     ]),
     1.9
@@ -302,7 +329,7 @@ orbGroup.add(
   makeSprite(
     makeGlowTexture(64, [
       [0,    'rgba(255,255,255,1)'],
-      [0.25, 'rgba(255,255,255,0.8)'],
+      [0.25, 'rgba(125,249,255,0.90)'],
       [1,    'rgba(0,0,0,0)'],
     ]),
     0.45
@@ -394,6 +421,8 @@ tl.to(warpProxy, {
   duration: 2.5,
   ease: 'power1.inOut',
 }, '<')
+tl.to(cyanStarMat, { opacity: 0.55, duration: 3.5, ease: 'power1.inOut' }, '<')
+tl.to(pinkStarMat, { opacity: 0.28, duration: 4.2, ease: 'power1.inOut' }, '<')
 
 // 2. Spawn orb at START_SCALE (tiny pin-point)
 tl.call(() => { orbGroup.visible = true })
