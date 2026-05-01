@@ -11,8 +11,8 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/assets/index-D4CRZFl-.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CFUfdUVt.css">
+    <script type="module" crossorigin src="/assets/index-CIUN3xN_.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DwuoqQ1c.css">
   </head>
 
   <!--
@@ -20,6 +20,16 @@
     intro animation completes.
   -->
   <body style="overflow: hidden">
+
+    <!-- ── Enter overlay (shown first — click to begin) ─────────────── -->
+
+    <div id="enter-overlay">
+      <div class="enter-inner">
+        <p class="enter-logo">Lumnis</p>
+        <button id="enter-btn" class="enter-btn">Begin Journey</button>
+        <p class="enter-hint">Turn on sound for the full experience</p>
+      </div>
+    </div>
 
     <!-- ── Fixed layers (canvas → overlay → nav) ──────────────────── -->
 
@@ -42,6 +52,20 @@
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
+        <button id="mute-btn" class="mute-btn" aria-label="Toggle sound">
+          <span class="icon-sound">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </span>
+          <span class="icon-muted">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          </span>
+        </button>
       </div>
     </nav>
 
