@@ -11,8 +11,6 @@ const canvas        = document.getElementById('bg')             as HTMLCanvasEle
 const textContainer = document.getElementById('text-container') as HTMLDivElement
 const navbar        = document.getElementById('navbar')         as HTMLElement
 const scrollHint    = document.getElementById('scroll-hint')    as HTMLElement
-const enterOverlay  = document.getElementById('enter-overlay')  as HTMLDivElement
-const enterBtn      = document.getElementById('enter-btn')      as HTMLButtonElement
 const muteBtn       = document.getElementById('mute-btn')       as HTMLButtonElement
 
 // ── Audio System ──────────────────────────────────────────────────────────────
@@ -121,6 +119,7 @@ function playShimmer(): void {
   })
 
   // Airy high-frequency transient
+
   const airBuf  = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * 0.4), audioCtx.sampleRate)
   const airData = airBuf.getChannelData(0)
   for (let i = 0; i < airData.length; i++) airData[i] = Math.random() * 2 - 1
@@ -140,6 +139,28 @@ function playShimmer(): void {
   airFilter.connect(airGain)
   airGain.connect(masterGain)
   airSrc.start()
+}
+
+function playTextReveal(): void {
+  if (!audioCtx || !masterGain) return
+
+  // Warm C-major chord settling into place as the text glows
+  ;[261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+    const osc  = audioCtx!.createOscillator()
+    const gain = audioCtx!.createGain()
+    const t    = audioCtx!.currentTime + i * 0.06
+
+    osc.type            = 'sine'
+    osc.frequency.value = freq
+    gain.gain.setValueAtTime(0,    t)
+    gain.gain.linearRampToValueAtTime(0.055, t + 0.3)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 5.0)
+
+    osc.connect(gain)
+    gain.connect(masterGain!)
+    osc.start(t)
+    osc.stop(t + 5.0)
+  })
 }
 
 // ── Scene / Camera / Renderer ─────────────────────────────────────────────────
@@ -432,9 +453,9 @@ tl.to(sweep, {
   },
 
   onComplete() {
-    // Remove mask entirely so the text is permanently and fully visible
     textContainer.style.setProperty('-webkit-mask-image', 'none')
     textContainer.style.setProperty('mask-image', 'none')
+    playTextReveal()
   },
 })
 
@@ -539,20 +560,18 @@ function setupScrollEffects() {
   })
 }
 
-// ── Enter button ──────────────────────────────────────────────────────────────
+// ── Auto-start ────────────────────────────────────────────────────────────────
 
-enterBtn.addEventListener('click', () => {
-  initAudio()
+initAudio()
 
-  gsap.to(enterOverlay, {
-    opacity: 0,
-    duration: 1.2,
-    ease: 'power2.inOut',
-    onComplete: () => { enterOverlay.style.display = 'none' },
-  })
+// Resume AudioContext on first pointer interaction (browser autoplay policy)
+const resumeCtx = () => {
+  audioCtx?.resume()
+  document.removeEventListener('pointerdown', resumeCtx)
+}
+document.addEventListener('pointerdown', resumeCtx)
 
-  startExperience()
-})
+startExperience()
 
 // ── Mute toggle ───────────────────────────────────────────────────────────────
 
