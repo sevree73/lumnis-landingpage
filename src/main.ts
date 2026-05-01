@@ -24,6 +24,7 @@ function initAudio(): void {
   masterGain = audioCtx.createGain()
   masterGain.gain.value = 1
   masterGain.connect(audioCtx.destination)
+  audioCtx.resume()
 }
 
 function startAmbientHum(): void {
@@ -564,12 +565,12 @@ function setupScrollEffects() {
 
 initAudio()
 
-// Resume AudioContext on first pointer interaction (browser autoplay policy)
-const resumeCtx = () => {
-  audioCtx?.resume()
-  document.removeEventListener('pointerdown', resumeCtx)
-}
-document.addEventListener('pointerdown', resumeCtx)
+// Unlock on any micro-interaction: mousemove fires almost instantly on desktop,
+// touchstart covers mobile — audio feels automatic in practice
+const resumeCtx = () => audioCtx?.resume()
+;['pointerdown', 'pointermove', 'touchstart', 'keydown', 'scroll'].forEach(e =>
+  document.addEventListener(e, resumeCtx, { once: true, passive: true })
+)
 
 startExperience()
 
